@@ -1,0 +1,48 @@
+## Результуючі файли компіляції та білду
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+## Rider / ReSharper / JetBrains (якщо відкриватиметься паралельно)
+.idea/
+*.DotSettings.user
+
+## VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Локальні конфігурації та секрети
+# Ігноруємо локальні перевизначення, залишаючи базовий appsettings.json у репозиторії
+**/appsettings.Development.json
+**/appsettings.*.local.json
+secrets.json
+
+## Тести та покриття коду
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+coverage.cobertura.xml
+*.coverage
+*.coveragexml
+
+## Пакетний менеджер NuGet
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.assets.json
+
+## Тимчасові файли ОС
+.DS_Store
+Thumbs.db
+ehthumbs.db

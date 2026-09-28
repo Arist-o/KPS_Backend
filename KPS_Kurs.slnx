@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/API/">
+    <Project Path="src/API/EntryPoint/EntryPoint.csproj" Id="4a8112dc-c727-406b-9385-d8c295dc192b" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Users/">
+    <Project Path="src/Modules/Users/Users.Application/Users.Application.csproj" Id="9800dbf3-4fa9-42d0-9f05-bab0aee2ff3c" />
+    <Project Path="src/Modules/Users/Users.Domain/Users.Domain.csproj" Id="44e73c7c-dec2-462d-86ab-9354fd903291" />
+    <Project Path="src/Modules/Users/Users.Persistence/Users.Persistence.csproj" Id="50597ec8-210c-457a-9202-b13baa59626d" />
+    <Project Path="src/Modules/Users/Users.Presentation/Users.Presentation.csproj" Id="41f90cee-77b2-41a8-94bd-cdbae875f8d4" />
+  </Folder>
+  <Folder Name="/src/Shared/" />
+</Solution>
