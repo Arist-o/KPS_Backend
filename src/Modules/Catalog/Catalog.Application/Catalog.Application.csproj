@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Catalog.Domain\Catalog.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Answer\Commands\" />
+    <Folder Include="Answer\DTOs\" />
+    <Folder Include="Answer\Queries\" />
+    <Folder Include="Discipline\Commands\" />
+    <Folder Include="Discipline\DTOs\" />
+    <Folder Include="Discipline\Queries\" />
+    <Folder Include="Question\Commands\" />
+    <Folder Include="Question\DTOs\" />
+    <Folder Include="Question\Queries\" />
+    <Folder Include="Topic\Commands\" />
+    <Folder Include="Topic\DTOs\" />
+    <Folder Include="Topic\Queries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+</Project>

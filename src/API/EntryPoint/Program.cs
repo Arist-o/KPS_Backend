@@ -1,8 +1,10 @@
+using Catalog.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-
+builder.Services.AddCatalogPersistence(builder.Configuration);
 var app = builder.Build();
 
 
