@@ -15,12 +15,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\Shared.csproj" />
     <ProjectReference Include="..\..\Modules\Catalog\Catalog.Application\Catalog.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Catalog\Catalog.Persistence\Catalog.Persistence.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalog\Catalog.Presentation\Catalog.Presentation.csproj" />
+    <ProjectReference Include="..\..\Modules\Users\Users.Application\Users.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Users\Users.Persistence\Users.Persistence.csproj" />
+    <ProjectReference Include="..\..\Modules\Users\Users.Presentation\Users.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
