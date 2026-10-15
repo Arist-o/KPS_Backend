@@ -3,7 +3,9 @@
   <Folder Name="/src/API/">
     <Project Path="src/API/EntryPoint/EntryPoint.csproj" Id="4a8112dc-c727-406b-9385-d8c295dc192b" />
   </Folder>
-  <Folder Name="/src/API/Shared/" />
+  <Folder Name="/src/API/Shared/">
+    <Project Path="src/API/Shared/Shared.csproj" Id="f1a2b3c4-d5e6-7890-abcd-ef1234567890" />
+  </Folder>
   <Folder Name="/src/Modules/" />
   <Folder Name="/src/Modules/Catalog/">
     <Project Path="src/Modules/Catalog/Catalog.Application/Catalog.Application.csproj" Id="b76ae905-10af-4236-941e-a6f4a1cc6342" />

@@ -1,29 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Catalog.Domain.Entity;
-using Microsoft.EntityFrameworkCore.Storage;
+using Shared.Common.Interfaces;
 
-namespace Catalog.Application.Common.Interfaces
+namespace Catalog.Application.Common.Interfaces;
+
+/// <summary>
+/// Unit of Work для модуля Catalog.
+/// Успадковує базові методи транзакцій від IBaseUnitOfWork (з Shared).
+/// Додає репозиторії, специфічні для Catalog.
+/// </summary>
+public interface IUnitOfWork : IBaseUnitOfWork
 {
-    public interface IUnitOfWork : IAsyncDisposable
-    {
-        IRepository<Answer> Answers { get; }
+    IRepository<Answer> Answers { get; }
 
-        IRepository<Discipline> Disciplines { get; }
+    IRepository<Discipline> Disciplines { get; }
 
-        IRepository<Question> Questions { get; }
+    IRepository<Question> Questions { get; }
 
-        IRepository<Topic> Topics { get; }
-
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-
-        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
-
-        Task CommitTransactionAsync(CancellationToken cancellationToken = default);
-
-        Task RollbackTransactionAsync(CancellationToken cancellationToken = default);
-
-        IExecutionStrategy CreateExecutionStrategy();
-    }
+    IRepository<Topic> Topics { get; }
 }

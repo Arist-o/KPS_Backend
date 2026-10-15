@@ -39,6 +39,9 @@
   4. `Presentation` — REST API контролери (`[ApiController]`) конкретного модуля.
   5. `Integration` — відкриті контракти, DTO подій та інтерфейси для міжмодульної взаємодії.
 - **Хост-додаток (Web API Host)**: Проєкт `src/API/EntryPoint` (ASP.NET Core Web API) слугує єдиною точкою входу, підключає всі модулі, налаштовує DI-контейнер, Swagger/OpenAPI, аутентифікацію (JWT) та HTTP-пайплайн.
+- **Централізоване керування пакетами (Central Package Management — CPM)**:
+  - На першому ж кроці в корені рішення обов'язково має створюватися файл `Directory.Packages.props` із глобальним увімкненням `ManagePackageVersionsCentrally="true"`.
+  - Це гарантує, що всі 10+ проєктів модульного моноліту використовуватимуть єдині узгоджені версії пакетів (MediatR, FluentValidation, AutoMapper, EF Core тощо), запобігаючи конфліктам збірки.
 
 ---
 
@@ -47,6 +50,7 @@
 ```text
 KPS_Kurs/
 ├── KPS_Kurs.slnx                                  # Solution-файл проєкту
+├── Directory.Packages.props                       # Централізоване керування версіями NuGet-пакетів (CPM)
 ├── AGENTS.md                                      # Правила та контекст для AI-агентів
 ├── src/
 │   ├── API/
@@ -246,16 +250,65 @@ public class GamesController(IMediator mediator) : ControllerBase
    * `Application` посилається лише на `Domain` (та `Integration` за потреби).
    * `Persistence` посилається на `Domain` та `Application`.
    * `EntryPoint` об'єднує всі модулі для запуску Web API.
+6. **Керування NuGet-пакетами (CPM)**:
+   * На першому ж кроці в корені рішення обов'язково створюється та підтримується файл `Directory.Packages.props` із глобальним увімкненням `ManagePackageVersionsCentrally="true"`.
+   * Ніколи не прописувати атрибут `Version` безпосередньо у файлах проєктів (`.csproj`). Версії всіх пакетів фіксуються виключно в `Directory.Packages.props`. У проєктах додаються лише посилання через `<PackageReference Include="..." />`.
+7. **Ізоляція міграцій EF Core**:
+   * Оскільки всі модулі (`Users`, `Catalog`, `Gameplay`, `Analytics`) використовують одну фізичну базу даних SQL Server, але різні схеми (`identity`, `catalog`, `gameplay`, `analytics`), кожен модуль під час налаштування `AddDbContext` зобов'язаний явно вказувати окрему таблицю історії міграцій у своїй схемі за допомогою `sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "<module_schema>")`.
 
 ---
 
-# 6. Database Schema & EF Core Rules
+## 6. Database Schema & EF Core Rules
 
 Примітка для модуля Users: Модуль Users використовує ASP.NET Core Identity. Його контекст бази даних (UsersDbContext) повинен успадковуватися від IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>, де ApplicationUser : IdentityUser<Guid>. Усі таблиці Identity (AspNetUsers, AspNetRoles або перейменовані Users, Roles тощо) повинні явно конфігуруватися у схемі identity (builder.HasDefaultSchema("identity")).
 
 Цей проєкт — Модульний Моноліт. Кожен модуль має власну ізольовану логічну схему в БД (`identity`, `catalog`, `gameplay`, `analytics`).
 **КРИТИЧНЕ ПРАВИЛО:** Прямі навігаційні властивості (Navigation Properties) та Foreign Keys (FK) на рівні EF Core між різними схемами/модулями **СУВОРО ЗАБОРОНЕНІ**.
 Замість них використовуються **"Soft FK" (Cross-module IDs)** — звичайні скалярні властивості типу `Guid`. EF Core одного модуля не повинен знати про існування сутностей іншого модуля.
+
+## Ізоляція EF Core міграцій (Окрема таблиця `__EFMigrationsHistory` для кожної схеми в SQL Server)
+
+Оскільки всі модулі (`Users`, `Catalog`, `Gameplay`, `Analytics`) використовують **одну фізичну базу даних SQL Server**, але **різні логічні схеми** (`identity`, `catalog`, `gameplay`, `analytics`), кожен модуль під час налаштування `AddDbContext` **повинен явно вказувати окрему таблицю історій міграцій у своїй схемі**:
+
+```csharp
+options.UseSqlServer(connectionString, sqlOptions =>
+    sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "catalog")); // замість catalog підставляти відповідну схему модуля
+```
+
+Це запобігає конфліктам таблиць міграцій між різними ізольованими контекстами бази даних. За замовчуванням EF Core створює одну таблицю `dbo.__EFMigrationsHistory` на всю БД. Якщо кілька контекстів використовуватимуть одну дефолтну таблицю, виникнуть конфлікти метаданих, блокування та помилки застосування міграцій.
+
+### Таблиця відповідності модулів, контекстів та схем міграцій:
+| Модуль | DbContext | Схема БД | Виклик `MigrationsHistoryTable` |
+|---|---|---|---|
+| `Users` | `UsersDbContext` | `identity` | `sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "identity")` |
+| `Catalog` | `CatalogDbContext` | `catalog` | `sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "catalog")` |
+| `Gameplay` | `GameplayDbContext` | `gameplay` | `sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "gameplay")` |
+| `Analytics` | `AnalyticsDbContext` | `analytics` | `sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "analytics")` |
+
+### Приклад конфігурації у шарі Persistence (`DependencyInjection.cs`):
+```csharp
+public static IServiceCollection AddCatalogPersistence(this IServiceCollection services, IConfiguration configuration)
+{
+    services.AddDbContext<CatalogDbContext>(options =>
+        options.UseSqlServer(
+            configuration.GetConnectionString("DefaultConnectionSqlServer"),
+            sqlOptions =>
+            {
+                // Обов'язкова ізоляція таблиці міграцій для схеми модуля:
+                sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "catalog");
+                sqlOptions.MigrationsAssembly(typeof(CatalogDbContext).Assembly.FullName);
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null
+                );
+            }
+        ));
+
+    services.AddScoped<IUnitOfWork, UnitOfWork>();
+    return services;
+}
+```
 
 ## Схема БД (DBML)
 Кожна таблиця має мати поле createdAt, updatedAt
